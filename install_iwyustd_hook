@@ -1,0 +1,10 @@
+#! /bin/bash
+#
+
+set -e
+
+hook=$(git rev-parse --show-toplevel)/.git/hooks/pre-commit
+rm -f $hook
+echo "#! /bin/bash" >>$hook
+echo "$(dirname ${BASH_SOURCE[0]})/iwyustd_git" >>$hook
+chmod 755 $hook

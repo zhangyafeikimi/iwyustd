@@ -1,0 +1,18 @@
+#! /bin/bash
+#
+
+REMOTE=$(git remote | head -n 1)
+if test "x$REMOTE" == x; then
+    # A local reposotory without remotes.
+    return
+fi
+
+files=$(git diff $REMOTE/HEAD --name-status --diff-filter=AM |
+    awk '/\.c$|\.cc$|\.cpp$|\.cxx$|\.h$|\.inl$|\.inc$|\.hpp$|\.ipp$|\.hh$|\.hxx$/{print $2}' |
+    sort)
+if test "x$files" != x; then
+    for file in $files; do
+        echo iwyustd $file...
+    done
+    $(dirname ${BASH_SOURCE[0]})/iwyustd $files
+fi

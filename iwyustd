@@ -1,0 +1,262 @@
+#! /usr/bin/env python3
+#
+
+
+import glob
+import os
+import re
+from optparse import OptionParser
+from typing import List, Optional, Set, Union
+import iwyudb
+import preferencedb
+from grammar import *
+from lexer import *
+from text import *
+
+
+###################################################################
+# KNOWN ISSUES:
+# 1. Could not distinguish std::move from <utility> or <algorithm>.
+# 2. Could not distinguish std::swap from <utility> or <algorithm>.
+# 3. To enrich iwyudb.
+# 4. To enrich preferencedb.
+
+
+###################################################################
+FILE_WHITE_LIST = [
+    "carbon/fs/detail/hdfs_c_api.h",
+    "local/src/lolcat-cc.cc",
+    "optimization/third_party/benchmark.h",
+    re.compile(".*/optimization/third_party/parallel_hashmap/.*"),
+]
+
+
+FILE_SYMBOL_WHITE_LIST = [
+    ("carbon/dynlib/dynlib_test.cc", "exp"),
+    ("carbon/dynlib/dynlib_test.cc", "expf"),
+    ("carbon/string/format.h", "printf"),
+    ("local/src/ksort.cc", "round"),
+]
+
+
+###################################################################
+RE_COMPILE_TYPE = type(re.compile("Hello World"))
+
+
+def match_file(wfile: Union[str, RE_COMPILE_TYPE], file: str) -> bool:
+    if isinstance(wfile, str):
+        return file.endswith(wfile)
+    elif isinstance(wfile, RE_COMPILE_TYPE):
+        return wfile.match(file)
+    else:
+        assert False
+
+
+def match_symbol(wsymbol: str, symbol: str) -> bool:
+    return wsymbol == symbol
+
+
+def file_is_white(file: str) -> bool:
+    for wfile in FILE_WHITE_LIST:
+        if match_file(wfile, file):
+            return True
+    return False
+
+
+def file_symbol_is_white(file: str, symbol: str) -> bool:
+    for wfile, wsymbol in FILE_SYMBOL_WHITE_LIST:
+        if match_file(wfile, file) and match_symbol(wsymbol, symbol):
+            return True
+    return False
+
+
+###################################################################
+SOURCE_SUFFIXES = [
+    ".c",
+    ".cc",
+    ".cpp",
+    ".cxx",
+]
+
+
+HEADER_SUFFIXES = [
+    ".h",
+    ".inl",
+    ".inc",
+    ".hpp",
+    ".ipp",
+    ".hh",
+    ".hxx",
+]
+
+
+def get_header(file: str) -> Optional[str]:
+    if file.endswith(".c"):
+        header = file[0:-2] + ".h"
+    elif file.endswith(".cc"):
+        header = file[0:-3] + ".h"
+    elif file.endswith(".cpp"):
+        header = file[0:-4] + ".h"
+    elif file.endswith(".cxx"):
+        header = file[0:-4] + ".h"
+    else:
+        header = ""
+    if os.path.isfile(header):
+        return header
+    else:
+        return None
+
+
+def list_files(paths: List[str]) -> List[str]:
+    if len(paths) == 0:
+        paths.append(".")
+    files = []
+    for _ in paths:
+        if os.path.isdir(_):
+            for suffix in SOURCE_SUFFIXES:
+                files += glob.glob(_ + "/**/*" + suffix, recursive=True)
+            for suffix in HEADER_SUFFIXES:
+                files += glob.glob(_ + "/**/*" + suffix, recursive=True)
+        elif os.path.isfile(_):
+            files.append(_)
+    files = [os.path.realpath(_) for _ in files]
+    files.sort()
+    return files
+
+
+def get_includes(lexer: Lexer) -> Set[str]:
+    includes = set([])
+    for _ in lexer.tokens:
+        if _.type is TokenType.PREPROCESS_INCLUDE:
+            include = _.extra.decode()
+            if include in iwyudb.HEADER_SET:
+                includes.add(include)
+    return includes
+
+
+def get_defines(lexer: Lexer) -> List[Token]:
+    defines = []
+    for _ in lexer.tokens:
+        if _.type is TokenType.PREPROCESS_DEFINE:
+            defines.append(_)
+    return defines
+
+
+def get_headers(symbol: str) -> Set[str]:
+    headers = set([])
+    _ = iwyudb.SYMBOL_2_HEADERS.get(symbol)
+    if _:
+        headers.update(_)
+    _ = iwyudb.PREFIX_PATTERN.match(symbol)
+    if _:
+        headers.update(iwyudb.PREFIX_2_HEADERS[_.group(1)])
+    return headers
+
+
+###################################################################
+if __name__ == "__main__":
+    parser = OptionParser(usage="Usage: %prog [FILE/DIR]...")
+    (options, paths) = parser.parse_args()
+
+    for file in list_files(paths):
+        if file_is_white(file):
+            continue
+
+        lexer = Lexer(open(file, "rb").read())
+        hl = Highlighter(lexer.content)
+        assert lexer.parse()
+
+        # Prepare `includes`, `header_includes`, `all_includes` and `required_includes`.
+        includes = get_includes(lexer)
+        header = get_header(file)
+        if header:
+            header_lexer = Lexer(open(header, "rb").read())
+            assert header_lexer.parse()
+            header_includes = get_includes(header_lexer)
+        else:
+            header_includes = set([])
+        all_includes = includes.copy()
+        all_includes.update(header_includes)
+        required_includes = set([])
+
+        # Rule 1.
+        for _ in includes:
+            if _ in header_includes:
+                print('"{}" should not include {}.\n    Reason: "{}" includes it.\n'.format(file, red(_), header))
+
+        # Check symbols from macros.
+        for define in get_defines(lexer):
+            define_str = define.content.decode()
+            for match in iwyudb.SYMBOL_PATTERN.finditer(define_str):
+                symbol_str = match.group(1)
+                if file_symbol_is_white(file, symbol_str):
+                    continue
+
+                # Rule 2: missing includes.
+                symbol_headers = get_headers(symbol_str)
+                if len(symbol_headers) > 0:
+                    ok = False
+                    for _ in symbol_headers:
+                        if _ in all_includes:
+                            required_includes.add(_)
+                            ok = True
+                    if not ok:
+                        print(
+                            '"{}" should include {} for {}.'.format(
+                                file, " or ".join([red(_) for _ in symbol_headers]), purple(symbol_str)
+                            )
+                        )
+                        print(hl.highlight(define.begin + match.start(), define.begin + match.end(), color="purple"))
+
+                # Rule 4: preference.
+                preferred_symbols = preferencedb.SYMBOL_2_PREFERRED_SYMBOLS.get(symbol_str)
+                if preferred_symbols:
+                    print(
+                        '"{}" {} is preferred to {}.'.format(
+                            file, " or ".join([purple(_) for _ in preferred_symbols]), purple(symbol_str)
+                        )
+                    )
+                    print(hl.highlight(define.begin + match.start(), define.begin + match.end(), color="purple"))
+
+        # Check symbols from grammar.
+        grammar = Grammar(lexer.tokens)
+        grammar.parse()
+        for symbol in grammar.symbols:
+            symbol_str = symbol.content.decode()
+            if file_symbol_is_white(file, symbol_str):
+                continue
+
+            # Rule 2: missing includes.
+            symbol_headers = get_headers(symbol_str)
+            if len(symbol_headers) > 0:
+                ok = False
+                for _ in symbol_headers:
+                    if _ in all_includes:
+                        required_includes.add(_)
+                        ok = True
+                if not ok:
+                    print(
+                        '"{}" should include {} for {}.'.format(
+                            file, " or ".join([red(_) for _ in symbol_headers]), purple(symbol_str)
+                        )
+                    )
+                    print(hl.highlight(symbol.begin, symbol.end, color="purple"))
+
+            # Rule 4: preference.
+            preferred_symbols = preferencedb.SYMBOL_2_PREFERRED_SYMBOLS.get(symbol_str)
+            if preferred_symbols:
+                print(
+                    '"{}" {} is preferred to {}.'.format(
+                        file, " or ".join([purple(_) for _ in preferred_symbols]), purple(symbol_str)
+                    )
+                )
+                print(hl.highlight(symbol.begin, symbol.end, color="purple"))
+
+        # Rule 3: unnecessary includes.
+        for _ in includes:
+            if _ not in required_includes:
+                print(
+                    '"{}" should not include {}.\n    Reason: symbols from {} are unused.\n'.format(
+                        file, red(_), red(_)
+                    )
+                )
