@@ -23,20 +23,42 @@ from text import *
 
 
 ###################################################################
-FILE_WHITE_LIST = [
-    "carbon/fs/detail/hdfs_c_api.h",
-    "local/src/lolcat-cc.cc",
-    "optimization/third_party/benchmark.h",
-    re.compile(".*/optimization/third_party/parallel_hashmap/.*"),
-]
+FILE_WHITE_LIST = []
+FILE_SYMBOL_WHITE_LIST = []
 
 
-FILE_SYMBOL_WHITE_LIST = [
-    ("carbon/dynlib/dynlib_test.cc", "exp"),
-    ("carbon/dynlib/dynlib_test.cc", "expf"),
-    ("carbon/string/format.h", "printf"),
-    ("local/src/ksort.cc", "round"),
-]
+def get_config_file(file: str) -> Optional[str]:
+    dir = file
+    while True:
+        dir = os.path.dirname(dir)
+        if dir in ["/", ""]:
+            return None
+        file = os.path.join(dir, ".iwyustd")
+        if os.path.isfile(file):
+            return file
+
+
+def try_load_config_file(file: str) -> None:
+    FILE_WHITE_LIST.clear()
+    FILE_SYMBOL_WHITE_LIST.clear()
+
+    file = get_config_file(file)
+    if file is None:
+        return
+
+    for line in open(file, "rb").readlines():
+        line = line.decode().strip()
+        fields = line.split()
+        if len(fields) == 1:
+            if "*" in fields[0]:
+                FILE_WHITE_LIST.append(re.compile(fields[0]))
+            else:
+                FILE_WHITE_LIST.append(fields[0])
+        elif len(fields) == 2:
+            if "*" in fields[0]:
+                FILE_SYMBOL_WHITE_LIST.append((re.compile(fields[0]), fields[1]))
+            else:
+                FILE_SYMBOL_WHITE_LIST.append((fields[0], fields[1]))
 
 
 ###################################################################
@@ -159,6 +181,8 @@ if __name__ == "__main__":
     (options, paths) = parser.parse_args()
 
     for file in list_files(paths):
+        try_load_config_file(file)
+
         if file_is_white(file):
             continue
 
