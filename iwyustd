@@ -130,6 +130,7 @@ def get_header(file: str) -> Optional[str]:
 
 
 def list_files(paths: List[str]) -> List[str]:
+    BAZEL_FILE_PATTERN = re.compile(r".*/bazel-.*/.*")
     if len(paths) == 0:
         paths.append(".")
     files = []
@@ -141,6 +142,7 @@ def list_files(paths: List[str]) -> List[str]:
                 files += glob.glob(_ + "/**/*" + suffix, recursive=True)
         elif os.path.isfile(_):
             files.append(_)
+    files = [_ for _ in files if not BAZEL_FILE_PATTERN.match(_)]
     files = [os.path.realpath(_) for _ in files]
     files.sort()
     return files
