@@ -5,9 +5,32 @@
 import re
 import types
 from typing import Dict, List, Set
+
+from iwyudb.c import arpa_inet
+from iwyudb.c import cassert
+from iwyudb.c import cctypes
+from iwyudb.c import cerrno
+from iwyudb.c import cinttypes
+from iwyudb.c import clocale
+from iwyudb.c import cmath
+from iwyudb.c import csignal
+from iwyudb.c import cstdarg
+from iwyudb.c import cstddef
+from iwyudb.c import cstdint
+from iwyudb.c import cstdio
+from iwyudb.c import cstdlib
+from iwyudb.c import cstring
+from iwyudb.c import ctime
+from iwyudb.c import cwchar
+from iwyudb.c import net_inet_in
+from iwyudb.c import pthread
+from iwyudb.c import strings
+from iwyudb.c import sys_stat
+from iwyudb.c import sys_time
+from iwyudb.c import unistd
+
 from iwyudb import any
 from iwyudb import algorithm
-from iwyudb import c
 from iwyudb import chrono
 from iwyudb import concurrent
 from iwyudb import container

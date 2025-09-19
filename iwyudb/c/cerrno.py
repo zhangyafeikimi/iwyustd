@@ -1,0 +1,96 @@
+#! /usr/bin/env python3
+#
+
+
+__all__ = [
+    "HEADER_2_SYMBOLS",
+]
+
+
+HEADER_2_SYMBOLS = {
+    "errno.h": [
+        # https://en.cppreference.com/w/c/header/errno.html
+        # https://en.cppreference.com/w/cpp/header/cerrno.html
+        "E2BIG",
+        "EACCES",
+        "EADDRINUSE",
+        "EADDRNOTAVAIL",
+        "EAFNOSUPPORT",
+        "EAGAIN",
+        "EALREADY",
+        "EBADF",
+        "EBADMSG",
+        "EBUSY",
+        "ECANCELED",
+        "ECHILD",
+        "ECONNABORTED",
+        "ECONNREFUSED",
+        "ECONNRESET",
+        "EDEADLK",
+        "EDESTADDRREQ",
+        "EDOM",
+        "EEXIST",
+        "EFAULT",
+        "EFBIG",
+        "EHOSTUNREACH",
+        "EIDRM",
+        "EILSEQ",
+        "EINPROGRESS",
+        "EINTR",
+        "EINVAL",
+        "EIO",
+        "EISCONN",
+        "EISDIR",
+        "ELOOP",
+        "EMFILE",
+        "EMLINK",
+        "EMSGSIZE",
+        "ENAMETOOLONG",
+        "ENETDOWN",
+        "ENETRESET",
+        "ENETUNREACH",
+        "ENFILE",
+        "ENOBUFS",
+        "ENODEV",
+        "ENOENT",
+        "ENOEXEC",
+        "ENOLCK",
+        "ENOLINK",
+        "ENOMEM",
+        "ENOMSG",
+        "ENOPROTOOPT",
+        "ENOSPC",
+        "ENOSYS",
+        "ENOTCONN",
+        "ENOTDIR",
+        "ENOTEMPTY",
+        "ENOTRECOVERABLE",
+        "ENOTSOCK",
+        "ENOTSUP",
+        "ENOTTY",
+        "ENXIO",
+        "EOPNOTSUPP",
+        "EOVERFLOW",
+        "EOWNERDEAD",
+        "EPERM",
+        "EPIPE",
+        "EPROTO",
+        "EPROTONOSUPPORT",
+        "EPROTOTYPE",
+        "ERANGE",
+        "EROFS",
+        "ESPIPE",
+        "ESRCH",
+        "ETIMEDOUT",
+        "ETXTBSY",
+        "EWOULDBLOCK",
+        "EXDEV",
+        #
+        "errno",
+        #
+        "errno_t",
+    ],
+}
+
+
+HEADER_2_SYMBOLS["cerrno"] = HEADER_2_SYMBOLS["errno.h"]
