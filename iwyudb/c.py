@@ -1461,6 +1461,7 @@ HEADER_2_SYMBOLS = {
         "utimensat",
     ],
     "sys/time.h": [
+        "timeval",
         "gettimeofday",
         "settimeofday",
     ],
