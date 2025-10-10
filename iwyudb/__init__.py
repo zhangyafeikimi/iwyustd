@@ -32,6 +32,7 @@ from iwyudb.c import unistd
 from iwyudb import any
 from iwyudb import algorithm
 from iwyudb import chrono
+from iwyudb import codecvt
 from iwyudb import concurrent
 from iwyudb import container
 from iwyudb import exception
@@ -39,8 +40,10 @@ from iwyudb import filesystem
 from iwyudb import functional
 from iwyudb import initializer_list
 from iwyudb import io
+from iwyudb import iomanip
 from iwyudb import iterator
 from iwyudb import limits
+from iwyudb import locale
 from iwyudb import memory
 from iwyudb import numeric
 from iwyudb import random
