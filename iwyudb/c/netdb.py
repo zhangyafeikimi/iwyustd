@@ -43,5 +43,8 @@ HEADER_2_SYMBOLS = {
         "setnetent",
         "setprotoent",
         "setservent",
+    ]
+    + [
+        "gai_strerror",
     ],
 }
