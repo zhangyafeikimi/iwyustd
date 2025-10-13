@@ -15,14 +15,6 @@ from text import *
 
 
 ###################################################################
-# KNOWN ISSUES:
-# 1. Could not distinguish std::move from <utility> or <algorithm>.
-# 2. Could not distinguish std::swap from <utility> or <algorithm>.
-# 3. To enrich iwyudb.
-# 4. To enrich preferencedb.
-
-
-###################################################################
 FILE_WHITE_LIST = []
 FILE_SYMBOL_WHITE_LIST = []
 
@@ -130,7 +122,7 @@ def get_header(file: str) -> Optional[str]:
 
 
 def list_files(paths: List[str]) -> List[str]:
-    BAZEL_FILE_PATTERN = re.compile(r".*/bazel-.*/.*")
+    IGNORE_FILE_PATTERN = re.compile(r".*(\.pb\.h|\.pb\.cc|/bazel-.*/|3rd|thirdparty|third_party).*")
     if len(paths) == 0:
         paths.append(".")
     files = []
@@ -142,19 +134,22 @@ def list_files(paths: List[str]) -> List[str]:
                 files += glob.glob(_ + "/**/*" + suffix, recursive=True)
         elif os.path.isfile(_):
             files.append(_)
-    files = [_ for _ in files if not BAZEL_FILE_PATTERN.match(_)]
+    files = [_ for _ in files if not IGNORE_FILE_PATTERN.match(_)]
     files = [os.path.realpath(_) for _ in files]
     files.sort()
     return files
 
 
 def get_includes(lexer: Lexer) -> Set[str]:
+    PRINT_MISSING = os.getenv("IWYUSTD_PRINT_MISSING", "0") == "1"
     includes = set([])
     for _ in lexer.tokens:
         if _.type is TokenType.PREPROCESS_INCLUDE:
             include = _.extra.decode()
             if include in iwyudb.HEADER_SET:
                 includes.add(include)
+            elif PRINT_MISSING:
+                print("{} is missing.".format(yellow(_.content.decode())))
     return includes
 
 

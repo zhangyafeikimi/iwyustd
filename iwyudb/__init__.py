@@ -11,6 +11,7 @@ from iwyudb.c import cassert
 from iwyudb.c import cctypes
 from iwyudb.c import cerrno
 from iwyudb.c import cinttypes
+from iwyudb.c import climit
 from iwyudb.c import clocale
 from iwyudb.c import cmath
 from iwyudb.c import csignal
@@ -22,11 +23,23 @@ from iwyudb.c import cstdlib
 from iwyudb.c import cstring
 from iwyudb.c import ctime
 from iwyudb.c import cwchar
+from iwyudb.c import dlfcn
+from iwyudb.c import fcntl
+from iwyudb.c import libgen
 from iwyudb.c import net_inet_in
+from iwyudb.c import netdb
+from iwyudb.c import poll
 from iwyudb.c import pthread
+from iwyudb.c import sched
 from iwyudb.c import strings
+from iwyudb.c import sys_mman
+from iwyudb.c import sys_socket
 from iwyudb.c import sys_stat
 from iwyudb.c import sys_time
+from iwyudb.c import sys_types
+from iwyudb.c import sys_uio
+from iwyudb.c import sys_un
+from iwyudb.c import ucontext
 from iwyudb.c import unistd
 
 from iwyudb import any
