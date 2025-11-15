@@ -45,6 +45,9 @@ HEADER_2_SYMBOLS = {
         "setservent",
     ]
     + [
+        "getaddrinfo",
+        "freeaddrinfo",
+        "getnameinfo",
         "gai_strerror",
     ],
 }
