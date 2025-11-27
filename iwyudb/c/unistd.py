@@ -370,5 +370,6 @@ HEADER_2_SYMBOLS = {
         "brk",
         "getpagesize",
         "sbrk",
+        "syscall",
     ],
 }
