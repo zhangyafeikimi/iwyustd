@@ -44,6 +44,8 @@ HEADER_2_SYMBOLS = {
         "ULONG_WIDTH",
         "USHRT_MAX",
         "USHRT_WIDTH",
+    ] + [
+        "PATH_MAX",
     ],
 }
 
