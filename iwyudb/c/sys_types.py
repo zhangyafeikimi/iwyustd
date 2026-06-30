@@ -18,7 +18,7 @@ HEADER_2_SYMBOLS = {
         "fsblkcnt_t",
         "fsfilcnt_t",
         "gid_t",
-        "id_t",
+        # "id_t",
         "ino_t",
         "key_t",
         "mode_t",
