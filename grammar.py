@@ -7,7 +7,6 @@ from typing import List
 from lexer import *
 from text import *
 
-
 ###################################################################
 __all__ = [
     "SymbolType",

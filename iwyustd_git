@@ -8,7 +8,7 @@ if test "x$REMOTE" == x; then
 fi
 
 files=$(git diff $REMOTE/HEAD --name-status --diff-filter=AM |
-    awk '/\.c$|\.cc$|\.cpp$|\.cxx$|\.h$|\.inl$|\.inc$|\.hpp$|\.ipp$|\.hh$|\.hxx$/{print $2}' |
+    awk '/\.c$|\.cc$|\.cpp$|\.cxx$|\.cu$|\.h$|\.inl$|\.inc$|\.hpp$|\.ipp$|\.hh$|\.hxx$/{print $2}' |
     sort)
 if test "x$files" != x; then
     for file in $files; do

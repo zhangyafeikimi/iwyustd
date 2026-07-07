@@ -7,7 +7,6 @@ from enum import IntEnum
 from typing import Any, List, Optional, Set, Union
 from text import *
 
-
 ###################################################################
 __all__ = [
     "TokenType",

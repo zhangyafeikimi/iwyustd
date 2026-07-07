@@ -71,7 +71,6 @@ from iwyudb import typeinfo
 from iwyudb import utility
 from iwyudb import variant
 
-
 __all__ = [
     "SYMBOL_2_HEADERS",
     "PREFIX_2_HEADERS",

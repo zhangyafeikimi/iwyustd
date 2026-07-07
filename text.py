@@ -6,7 +6,6 @@ import re
 import sys
 from typing import List, Tuple
 
-
 ###################################################################
 __all__ = [
     "black",
